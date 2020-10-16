@@ -1,0 +1,32 @@
+{
+  "name": "Gtm",
+  "version": "1.0.0",
+  "author": [
+    "harugon"
+  ],
+  "url": "",
+  "descriptionmsg": "gtm-desc",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.34.0"
+  },
+  "MessagesDirs": {
+    "Gtm": [
+      "i18n"
+    ]
+  },
+  "AutoloadClasses": {
+    "Gtm\\Hooks": "includes/Hooks.php"
+  },
+  "Hooks": {
+    "BeforePageDisplay": "Gtm\\Hooks::onBeforePageDisplay"
+  },
+  "config": {
+    "GtmId": {
+      "value": "",
+      "description": "Google Tag Manager ID (\"GTM-XXXXXXXXX\")"
+    }
+  },
+  "manifest_version": 2
+}
