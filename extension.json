@@ -20,12 +20,21 @@
     "Gtm\\Hooks": "includes/Hooks.php"
   },
   "Hooks": {
-    "BeforePageDisplay": "Gtm\\Hooks::onBeforePageDisplay"
+    "BeforePageDisplay": "Gtm\\Hooks::onBeforePageDisplay",
+    "SkinAfterBottomScripts": "Gtm\\Hooks::onSkinAfterBottomScripts"
   },
   "config": {
     "GtmId": {
       "value": "",
-      "description": "Google Tag Manager ID (\"GTM-XXXXXXXXX\")"
+      "description": "Container ID, formatted as \"GTM-XXXXXX\"."
+    },
+    "GtmNoScript": {
+      "value": "",
+      "description": "Google Tag Manager No Script tag"
+    },
+    "GtmAddScript": {
+      "value": "",
+      "description": ""
     }
   },
   "manifest_version": 2

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Gtm;
 
 use MediaWiki\MediaWikiServices;
@@ -8,54 +7,65 @@ use MWException;
 use OutputPage;
 use Skin;
 
-class Hooks
-{
-    /**
-     * onBeforePageDisplay
-     *
-     * @param OutputPage $out
-     * @param Skin $skin
-     * @throws MWException
-     */
-    public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
+class Hooks {
 
-        $conf =  MediaWikiServices::getInstance()->getMainConfig();
+	/**
+	 * onBeforePageDisplay
+	 *
+	 * @param OutputPage $out
+	 * @param Skin $skin
+	 * @throws MWException
+	 */
+	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
+		$conf = MediaWikiServices::getInstance()->getMainConfig();
 
-        $gtm_id = $conf->get( 'GtmId' );
-        $noscript = $conf->get( 'Gtm-noscript' );
+		/** @var string $container_id Container ID */
+		$container_id = $conf->get( 'GtmId' );
+		/** @var string $add_script script */
+		$add_script = $conf->get( 'GtmAddScript' );
+		$html = "";
 
-        if ( $gtm_id  == "" ) {
-            throw new MWException( "Please update your LocalSettings.php with the correct Gtm configurations" );
-        }
-
-        $html = <<<TXT
+		if ( $container_id == "" ) {
+		   new MWException( "Please update your LocalSettings.php with the correct Gtm configurations" );
+		}
+		if ( $add_script == "" ) {
+			$html .= $add_script;
+		}
+		$html .= <<<TXT
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','{$gtm_id}');</script>
+})(window,document,'script','dataLayer','{$container_id}');</script>
 <!-- End Google Tag Manager -->
 TXT;
-        $out->addHeadItem("gtm", $html );
+		$out->addHeadItem( "gtm", $html );
+	}
 
+	/**
+	 * onSkinAfterBottomScripts
+	 *
+	 * @param Skin $skin
+	 * @param &$text
+	 * @return bool
+	 */
+	public static function onSkinAfterBottomScripts( Skin $skin, &$text ) {
+		$conf = MediaWikiServices::getInstance()->getMainConfig();
 
+		/** @var string $noscript NoScript Overwrite */
 
-        if (! $noscript  == "" ) {
-            //<body>直下はできないので上の方
-            $noscript = <<<TXT
+		if ( $noscript == "" ) {
+			$noscript = <<<TXT
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGRSTX"
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$container_id}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 TXT;
-            $out->prependHTML($noscript);
-
-        }
-
-
-
-    }
-
+			$text .= $noscript;
+		} else {
+			$text .= $noscript;
+		}
+		return true;
+	}
 }
-
