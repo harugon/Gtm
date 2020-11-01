@@ -16,7 +16,7 @@ jobs:
         with:
           path: ./Gtm
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --no-dev
         working-directory: ./Gtm
 
       - name: tar.gz
