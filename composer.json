@@ -37,7 +37,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Gtm\\": "includes/"
+      "Gtm\\": "includes/",
+      "Gtm\\Test\\": "test/"
     }
   }
 }

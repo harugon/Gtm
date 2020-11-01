@@ -25,9 +25,6 @@ class Hooks {
 		$add_script = $conf->get( 'GtmAddScript' );
 		$html = "";
 
-		if ( $container_id == "" ) {
-		   new MWException( "Please update your LocalSettings.php with the correct Gtm configurations" );
-		}
 		if ( $add_script == "" ) {
 			$html .= $add_script;
 		}
@@ -53,7 +50,8 @@ TXT;
 	public static function onSkinAfterBottomScripts( Skin $skin, &$text ) {
 		$conf = MediaWikiServices::getInstance()->getMainConfig();
 
-		/** @var string $noscript NoScript Overwrite */
+        $container_id = $conf->get( 'GtmId' );
+        $noscript = $conf->get( 'GtmNoScript' );
 
 		if ( $noscript == "" ) {
 			$noscript = <<<TXT
