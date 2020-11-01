@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Gtm\Test;
+namespace Gtm\Tests;
 
 
 use Gtm\Hooks;
