@@ -13,6 +13,8 @@ jobs:
         run: |
           sudo systemctl start mysql.service
           mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS mediawiki;'
+      - name: Setup PHP 7.4
+        run: sudo update-alternatives --set php /usr/bin/php7.4
       - name: MediaWiki
         uses: actions/checkout@v2
         with:
