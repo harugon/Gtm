@@ -13,11 +13,9 @@ MediaWiki　にGoogle タグ マネージャーを追加します
 
 ## Download
 
-### Composer
-Composer でインストールします [composer.local.json](https://www.mediawiki.org/wiki/Composer#Using_composer-merge-plugin)
-```bash
-COMPOSER=composer.local.json composer require harugon/Gtm
-```
+[Releases · harugon/Gtm](https://github.com/harugon/Gtm/releases) 
+から ``Gtm-vxx.tar.gz``をダウンロードしextensionsフォルダに展開
+
 
 ## Install
 
@@ -31,9 +29,11 @@ $wgGtmId = "";// GTM-XXXXX
 
 ## Config
 
-| config         | default | Example    |
+| config         |  | Example    |
 |----------------|---------|------------|
-| $wgGtmId       | ""      | GTM-XXXXXX |
+| $wgGtmId       | コンテナID     　 | GTM-XXXXXX |
+| $wgGtmScript　　| 上書き追加タグ  　 | 　　　　　　 |
+| $wgGtmNoScript | 上書きNoScriptタグ|  　　　　　　|
 
 ## Licence
 

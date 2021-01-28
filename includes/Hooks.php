@@ -22,13 +22,11 @@ class Hooks {
 		/** @var string $container_id Container ID */
 		$container_id = $conf->get( 'GtmId' );
 		/** @var string $add_script script */
-		$add_script = $conf->get( 'GtmAddScript' );
+		$script = $conf->get( 'GtmScript' );
 		$html = "";
 
-		if ( $add_script == "" ) {
-			$html .= $add_script;
-		}
-		$html .= <<<TXT
+		if ($script === "" ) {
+            $html .= <<<TXT
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -37,6 +35,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','{$container_id}');</script>
 <!-- End Google Tag Manager -->
 TXT;
+		}else{
+            $html .= $script;
+        }
+
 		$out->addHeadItem( "gtm", $html );
 	}
 
@@ -53,7 +55,7 @@ TXT;
         $container_id = $conf->get( 'GtmId' );
         $noscript = $conf->get( 'GtmNoScript' );
 
-		if ( $noscript == "" ) {
+		if ($noscript === "" ) {
 			$noscript = <<<TXT
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$container_id}"
@@ -62,7 +64,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 TXT;
 			$text .= $noscript;
 		} else {
-			$text .= $noscript;
+			$text .= "<noscript>".$noscript."<noscript>";
 		}
 		return true;
 	}

@@ -32,7 +32,7 @@
       "value": "",
       "description": "Google Tag Manager No Script tag"
     },
-    "GtmAddScript": {
+    "GtmScript": {
       "value": "",
       "description": ""
     }
