@@ -19,20 +19,24 @@ class Hooks {
 	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
 		$conf = MediaWikiServices::getInstance()->getMainConfig();
 
-		/** @var string $container_id Container ID */
-		$container_id = $conf->get( 'GtmId' );
-		/** @var string $add_script script */
+
+		$containerId = $conf->get( 'GtmId' );
 		$script = $conf->get( 'GtmScript' );
+        $GtmBefore = $conf->get( 'GtmBefore' );
+
 		$html = "";
 
 		if ($script === "" ) {
+		    if ($GtmBefore !== "" ){
+                $html .= $GtmBefore.PHP_EOL;
+            }
             $html .= <<<TXT
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','{$container_id}');</script>
+})(window,document,'script','dataLayer','{$containerId}');</script>
 <!-- End Google Tag Manager -->
 TXT;
 		}else{
@@ -52,13 +56,13 @@ TXT;
 	public static function onSkinAfterBottomScripts( Skin $skin, &$text ) {
 		$conf = MediaWikiServices::getInstance()->getMainConfig();
 
-        $container_id = $conf->get( 'GtmId' );
+        $containerId = $conf->get( 'GtmId' );
         $noscript = $conf->get( 'GtmNoScript' );
 
 		if ($noscript === "" ) {
 			$noscript = <<<TXT
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$container_id}"
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 TXT;

@@ -32,6 +32,7 @@ $wgGtmId = "";// GTM-XXXXX
 | config         |  | Example    |
 |----------------|---------|------------|
 | $wgGtmId       | コンテナID     　 | GTM-XXXXXX |
+| $wgGtmBefore 　 | コンテナスクリプトより前に追加されるBefore|  <script>dataLayer = [RLCONF]</script>|
 | $wgGtmScript　　| 上書き追加タグ  　 | 　　　　　　 |
 | $wgGtmNoScript | 上書きNoScriptタグ|  　　　　　　|
 

@@ -32,6 +32,10 @@
       "value": "",
       "description": "Google Tag Manager No Script tag"
     },
+    "GtmBefore": {
+      "value": "",
+      "description": ""
+    },
     "GtmScript": {
       "value": "",
       "description": ""
