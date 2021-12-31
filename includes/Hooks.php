@@ -1,6 +1,6 @@
 <?php
 
-namespace Gtm;
+namespace MediaWiki\Extension\Gtm;
 
 use MediaWiki\MediaWikiServices;
 use MWException;

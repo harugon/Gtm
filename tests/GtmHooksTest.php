@@ -1,16 +1,16 @@
 <?php
 
 
-namespace Gtm\Tests;
+namespace MediaWiki\Extension\Gtm\Tests;
 
 
-use Gtm\Hooks;
-use Gtm;
+use MediaWiki\Extension\Gtm\Hooks;
+use MediaWikiIntegrationTestCase;
 use OutputPage;
 use RequestContext;
 use SkinTemplate;
 
-class GtmHooksTest extends \MediaWikiTestCase
+class GtmHooksTest extends MediaWikiIntegrationTestCase
 {
 
     public function testBeforePageDisplay() {

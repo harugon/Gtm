@@ -1,13 +1,16 @@
-name: MediaWiki Extension
-on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-      - 'i18n/**'
-      - '.github/**'
+name: CI
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - mediawiki_version: 1_35
+          - mediawiki_version: 1_36
+          - mediawiki_version: 1_37
+    env:
+      EXT_NAME: Gtm
     steps:
       - name: MySQL
         run: |
@@ -19,27 +22,27 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: wikimedia/mediawiki
-          ref: REL1_35
+          ref: REL${{ matrix.mediawiki_version }}
           path: ./w
       - name: MediaWik install
         run: |
-          sudo composer self-update 1.10.16
           composer install --prefer-dist --no-progress --no-suggest
           php maintenance/install.php --dbname=mediawiki --dbserver="127.0.0.1" --dbuser=root --dbpass=root --lang=ja --pass=7M3p8JZMhm "Wiki Name" "Admin"
         working-directory: ./w
       - name: Extenion
         uses: actions/checkout@v2
         with:
-          path: ./w/extensions/Gtm
+          path: ./w/extensions/${{ env.EXT_NAME }}
       - name: Extension install
         run: |
           composer install
-        working-directory: ./w/extensions/Gtm
+        working-directory: ./w/extensions/${{ env.EXT_NAME }}
       - name: LocalSettings install
         run: |
-          echo 'wfLoadExtension( "Gtm" );' >> LocalSettings.php
+          echo 'wfLoadExtension( "${{ env.EXT_NAME }}" );' >> LocalSettings.php
         working-directory: ./w
-      - name: Test
-        run: php tests/phpunit/phpunit.php extensions/Gtm/tests/
+      - name: Run Tests
+        run: >
+          php tests/phpunit/phpunit.php extensions/Gtm/tests/GtmHooksTest.php
         working-directory: ./w
     # Add a test script to composer.json, for ins
