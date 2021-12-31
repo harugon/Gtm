@@ -16,12 +16,13 @@
       "i18n"
     ]
   },
-  "AutoloadClasses": {
-    "Gtm\\Hooks": "includes/Hooks.php"
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\Gtm\\": "includes/",
+    "MediaWiki\\Extension\\Gtm\\test\\": "test/"
   },
   "Hooks": {
-    "BeforePageDisplay": "Gtm\\Hooks::onBeforePageDisplay",
-    "SkinAfterBottomScripts": "Gtm\\Hooks::onSkinAfterBottomScripts"
+    "BeforePageDisplay": "MediaWiki\\Extension\\Gtm\\Hooks::onBeforePageDisplay",
+    "SkinAfterBottomScripts": "MediaWiki\\Extension\\Gtm\\Hooks::onSkinAfterBottomScripts"
   },
   "config": {
     "GtmId": {
