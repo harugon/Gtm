@@ -1,6 +1,6 @@
 {
   "name": "Gtm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": [
     "harugon"
   ],
@@ -9,7 +9,7 @@
   "license-name": "MIT",
   "type": "other",
   "requires": {
-    "MediaWiki": ">= 1.34.0"
+    "MediaWiki": ">= 1.35.0"
   },
   "MessagesDirs": {
     "Gtm": [
@@ -20,24 +20,26 @@
     "MediaWiki\\Extension\\Gtm\\": "includes/",
     "MediaWiki\\Extension\\Gtm\\test\\": "test/"
   },
+  "HookHandlers": {
+    "main": {
+      "class": "MediaWiki\\Extension\\Gtm\\Hooks",
+      "services": [ "MainConfig" ]
+    }
+  },
   "Hooks": {
-    "BeforePageDisplay": "MediaWiki\\Extension\\Gtm\\Hooks::onBeforePageDisplay",
-    "SkinAfterBottomScripts": "MediaWiki\\Extension\\Gtm\\Hooks::onSkinAfterBottomScripts"
+    "BeforePageDisplay": "main",
+    "SkinAfterBottomScripts":"main"
   },
   "config": {
     "GtmId": {
       "value": "",
       "description": "Container ID, formatted as \"GTM-XXXXXX\"."
     },
-    "GtmNoScript": {
-      "value": "",
-      "description": "Google Tag Manager No Script tag"
-    },
-    "GtmBefore": {
-      "value": "",
+    "GtmData": {
+      "value": [""],
       "description": ""
     },
-    "GtmScript": {
+    "GtmAddTag": {
       "value": "",
       "description": ""
     }

@@ -25,16 +25,23 @@ Google タグ マネージャー のコンテナIDを```$wgGtmId```に指定し�
 ```php
 wfLoadExtension( 'Gtm' );
 $wgGtmId = "";// GTM-XXXXX
+
+$wgGtmData = [
+    'wgPageName',
+    'wgUserId',
+];
 ```
 
 ## Config
 
-| config         |  | Example    |
-|----------------|---------|------------|
-| $wgGtmId       | コンテナID     　 | GTM-XXXXXX |
-| $wgGtmBefore 　 | コンテナスクリプトより前に追加されるBefore|  <script>dataLayer = [RLCONF]</script>|
-| $wgGtmScript　　| 上書き追加タグ  　 | 　　　　　　 |
-| $wgGtmNoScript | 上書きNoScriptタグ|  　　　　　　|
+| config         |                                           | Example                                  |
+|----------------|-------------------------------------------|------------------------------------------|
+| $wgGtmId       | コンテナID     　                              | $wgGtmId = "GTM-XXXXXX";                 |
+| $wgGtmAddTag　　 | 追加タグ(gtm.jsの下に追加されるタグ)  　                 | $wgGtmAddTag = "<sctipt></script>";　　　   |
+| $wgGtmData     | getJsVars() で取得できるデータをdataLayerにmapします　   | $wgGtmData = ['wgPageName','wgUserId',]; |
+
+
+[Manual:Interface/JavaScript \- MediaWiki](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript/ja#All_pages_(user/page-specific))
 
 ## Licence
 

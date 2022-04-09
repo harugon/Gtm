@@ -2,35 +2,75 @@
 
 namespace MediaWiki\Extension\Gtm;
 
-use MediaWiki\MediaWikiServices;
-use MWException;
+use Config;
+use Html;
+use MediaWiki\Hook\BeforePageDisplayHook;
+use MediaWiki\Hook\SkinAfterBottomScriptsHook;
 use OutputPage;
 use Skin;
 
-class Hooks {
+class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook {
+
+	/** @var Config */
+	public $config;
 
 	/**
-	 * onBeforePageDisplay
-	 *
+	 * @param Config $config
+	 */
+	public function __construct( Config $config ) {
+		$this->config = $config;
+	}
+
+	/**
+	 * @param $GtmData array
+	 * @param $JSVars array
+	 * @return array
+	 */
+	public function getDataLayer( array $GtmData, array $JSVars ): array {
+		$dataLayer = [];
+		foreach ( $GtmData as $key ) {
+			 if ( isset( $JSVars[$key] ) ) {
+				 // @todo userID null
+				 $dataLayer[$key] = $JSVars[$key];
+			 }
+		}
+		return $dataLayer;
+	}
+
+	/**
 	 * @param OutputPage $out
 	 * @param Skin $skin
-	 * @throws MWException
+	 * @return void
 	 */
-	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
-		$conf = MediaWikiServices::getInstance()->getMainConfig();
-
-
-		$containerId = $conf->get( 'GtmId' );
-		$script = $conf->get( 'GtmScript' );
-        $GtmBefore = $conf->get( 'GtmBefore' );
-
+	public function onBeforePageDisplay( $out, $skin ): void {
 		$html = "";
 
-		if ($script === "" ) {
-		    if ($GtmBefore !== "" ){
-                $html .= $GtmBefore.PHP_EOL;
-            }
-            $html .= <<<TXT
+		$containerId = $this->config->get( 'GtmId' );
+		$GtmData = $this->config->get( 'GtmData' );
+		$GtmAddTag = $this->config->get( 'GtmAddTag' );
+
+		// Google Tag Manager Container ID
+		if ( $containerId !== "" ) {
+
+			// DataLayer
+			if ( isset( $GtmData[0] ) ) {
+
+				$DataLayer = $this->getDataLayer( $GtmData, $out->getJSVars() );
+				$DataLayerPush = '';
+
+				if ( $DataLayer ) {
+					$DataLayerPush = json_encode( $DataLayer );
+				}
+
+				$html .= Html::element(
+					'script',
+					[],
+					'dataLayer =[' . $DataLayerPush . '];'
+				) . PHP_EOL;
+			}
+
+			// Google Tag Manager Tag
+			$html .= <<<TXT
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -39,36 +79,47 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','{$containerId}');</script>
 <!-- End Google Tag Manager -->
 TXT;
-		}else{
-            $html .= $script;
-        }
 
-		$out->addHeadItem( "gtm", $html );
+			// Custom Tag
+			$html .= $GtmAddTag;
+
+			// Add
+			$out->addHeadItem( "gtm", $html );
+		}
 	}
 
 	/**
-	 * onSkinAfterBottomScripts
-	 *
 	 * @param Skin $skin
 	 * @param &$text
 	 * @return bool
 	 */
-	public static function onSkinAfterBottomScripts( Skin $skin, &$text ) {
-		$conf = MediaWikiServices::getInstance()->getMainConfig();
+	public function onSkinAfterBottomScripts( $skin, &$text ): bool {
+		$containerId = $this->config->get( 'GtmId' );
+        $GtmData = $this->config->get( 'GtmData' );
 
-        $containerId = $conf->get( 'GtmId' );
-        $noscript = $conf->get( 'GtmNoScript' );
 
-		if ($noscript === "" ) {
+
+		if ( $containerId !== "" ) {
+
+            // DataLayer
+            $DataLayerPush = '';
+            if ( isset( $GtmData[0] ) ) {
+
+                $DataLayer = $this->getDataLayer( $GtmData, $skin->getOutput()->getJSVars() );
+
+
+                if ( $DataLayer ) {
+                    $DataLayerPush =  '&'.http_build_query($DataLayer);
+                }
+            }
+
 			$noscript = <<<TXT
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}"
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}{$DataLayerPush}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 TXT;
 			$text .= $noscript;
-		} else {
-			$text .= "<noscript>".$noscript."<noscript>";
 		}
 		return true;
 	}
