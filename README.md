@@ -1,9 +1,10 @@
 Gtm
 ====
-MediaWiki　にGoogle タグ マネージャーを追加します
+MediaWiki　にGoogleTagManagerを追加します
 
 [Google タグ マネージャー](https://tagmanager.google.com/?hl=ja#/home)
 
+![MediaWiki Google Tag Manager](https://repository-images.githubusercontent.com/304636384/d496c1b9-b259-4b2b-bb3e-318484b52dcb)
 ## Description
 このMediaWiki拡張はすべてのページにGoogle タグ マネージャーのコンテナスニペットを追加します
 
