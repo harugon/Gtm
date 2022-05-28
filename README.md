@@ -35,11 +35,15 @@ $wgGtmData = [
 
 ## Config
 
-| config         |                                           | Example                                  |
-|----------------|-------------------------------------------|------------------------------------------|
-| $wgGtmId       | コンテナID     　                              | $wgGtmId = "GTM-XXXXXX";                 |
-| $wgGtmAddTag　　 | 追加タグ(gtm.jsの下に追加されるタグ)  　                 | $wgGtmAddTag = "<sctipt></script>";　　　   |
-| $wgGtmData     | getJsVars() で取得できるデータをdataLayerにmapします　   | $wgGtmData = ['wgPageName','wgUserId',]; |
+| config         |                                        | Example                                  |
+|----------------|----------------------------------------|------------------------------------------|
+| $wgGtmId       | コンテナID     　                           | $wgGtmId = "GTM-XXXXXX";                 |
+| $wgGtmBeforeTag　  | 追加タグ(gtm.jsの上に追加されるタグ)  　              | $wgGtmBeforeTag = "<sctipt></script>";   |
+| $wgGtmAfterTag  | 追加タグ(gtm.jsの下に追加されるタグ)  　              | $wgGtmAfterTag = "<sctipt></script>";    |
+| $wgGtmData     | getJsVars() で取得できるデータをdataLayerに追加する　  | $wgGtmData = ['wgPageName','wgUserId',]; |
+| $wgGtmNoScript  | Noscriptタグを追加するか                       | $wgGtmNoScript　= false;                  |
+| $wgGtmAttribs  | gtm.js associative array of attributes | $wgGtmAttribs = ["data-cookieconsent"=>"ignore"];      |
+
 
 
 [Manual:Interface/JavaScript \- MediaWiki](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript/ja#All_pages_(user/page-specific))

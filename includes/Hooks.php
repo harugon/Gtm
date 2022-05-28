@@ -30,7 +30,6 @@ class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook {
 		$dataLayer = [];
 		foreach ( $GtmData as $key ) {
 			 if ( isset( $JSVars[$key] ) ) {
-				 // @todo userID null
 				 $dataLayer[$key] = $JSVars[$key];
 			 }
 		}
@@ -43,16 +42,17 @@ class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook {
 	 * @return void
 	 */
 	public function onBeforePageDisplay( $out, $skin ): void {
-		$html = "";
-
 		$containerId = $this->config->get( 'GtmId' );
 		$GtmData = $this->config->get( 'GtmData' );
-		$GtmAddTag = $this->config->get( 'GtmAddTag' );
+		$GtmAttribs = $this->config->get( 'GtmAttribs' );
+		$GtmBeforeTag = $this->config->get( 'GtmBeforeTag' );
+		$GtmAfterTag = $this->config->get( 'GtmAfterTag' );
 
 		// Google Tag Manager Container ID
 		if ( $containerId !== "" ) {
 
 			// DataLayer
+			$DataLayerTag = "";
 			if ( isset( $GtmData[0] ) ) {
 
 				$DataLayer = $this->getDataLayer( $GtmData, $out->getJSVars() );
@@ -61,30 +61,32 @@ class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook {
 				if ( $DataLayer ) {
 					$DataLayerPush = json_encode( $DataLayer );
 				}
+				$DataLayerTag = PHP_EOL . 'window.dataLayer = window.dataLayer || []; dataLayer = [' . $DataLayerPush . '];';
+			}
 
-				$html .= Html::element(
-					'script',
-					[],
-					'dataLayer =[' . $DataLayerPush . '];'
-				) . PHP_EOL;
+			// BeforeTag
+			if ( $GtmBeforeTag !== "" ) {
+				$out->addHeadItem( "gtm-before", $GtmBeforeTag );
 			}
 
 			// Google Tag Manager Tag
-			$html .= <<<TXT
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			$html = Html::element(
+				'script',
+				$GtmAttribs, <<<TXT
+{$DataLayerTag}
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','{$containerId}');</script>
-<!-- End Google Tag Manager -->
-TXT;
+})(window,document,'script','dataLayer','{$containerId}');
+TXT );
+			$out->addHeadItem( "gtm-script", $html );
 
-			// Custom Tag
-			$html .= $GtmAddTag;
+			// AfterTag
+			if ( $GtmAfterTag !== "" ) {
+				$out->addHeadItem( "gtm-after", $GtmAfterTag );
+			}
 
-			// Add
-			$out->addHeadItem( "gtm", $html );
 		}
 	}
 
@@ -95,32 +97,32 @@ TXT;
 	 */
 	public function onSkinAfterBottomScripts( $skin, &$text ): bool {
 		$containerId = $this->config->get( 'GtmId' );
-        $GtmData = $this->config->get( 'GtmData' );
+		$GtmData = $this->config->get( 'GtmData' );
+		$GtmNoScript = $this->config->get( 'GtmNoScript' );
 
+		if ( !$GtmNoScript ) {
+			return true;
+		}
 
+		if ( $containerId === "" ) {
+			return true;
+		}
 
-		if ( $containerId !== "" ) {
+		// DataLayer
+		$DataLayerPush = '';
+		if ( isset( $GtmData[0] ) ) {
+			$DataLayer = $this->getDataLayer( $GtmData, $skin->getOutput()->getJSVars() );
+			if ( $DataLayer ) {
+				$DataLayerPush = '&' . http_build_query( $DataLayer );
+			}
+		}
 
-            // DataLayer
-            $DataLayerPush = '';
-            if ( isset( $GtmData[0] ) ) {
-
-                $DataLayer = $this->getDataLayer( $GtmData, $skin->getOutput()->getJSVars() );
-
-
-                if ( $DataLayer ) {
-                    $DataLayerPush =  '&'.http_build_query($DataLayer);
-                }
-            }
-
-			$noscript = <<<TXT
-<!-- Google Tag Manager (noscript) -->
+		$noscript = <<<TXT
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}{$DataLayerPush}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 TXT;
-			$text .= $noscript;
-		}
+		$text .= $noscript;
+
 		return true;
 	}
 }

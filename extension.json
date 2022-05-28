@@ -35,11 +35,23 @@
       "value": "",
       "description": "Container ID, formatted as \"GTM-XXXXXX\"."
     },
+    "GtmNoScript": {
+      "value": true,
+      "description": ""
+    },
+    "GtmAttribs": {
+      "value": null,
+      "description": ""
+    },
     "GtmData": {
       "value": [""],
       "description": ""
     },
-    "GtmAddTag": {
+    "GtmBeforeTag": {
+      "value": "",
+      "description": ""
+    },
+    "GtmAfterTag": {
       "value": "",
       "description": ""
     }
