@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MediaWiki\Extension\Gtm;
 
 use Config;
@@ -9,118 +11,139 @@ use MediaWiki\Hook\SkinAfterBottomScriptsHook;
 use OutputPage;
 use Skin;
 
-class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook {
+class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook
+{
 
 	/** @var Config */
-	public $config;
+	private $config;
 
-	/**
-	 * @param Config $config
-	 */
-	public function __construct( Config $config ) {
+	public function __construct(Config $config)
+	{
 		$this->config = $config;
 	}
 
 	/**
-	 * @param $GtmData array
-	 * @param $JSVars array
+	 * 指定キーのみを JSVars から抽出して dataLayer に渡すペイロードを構築
+	 * @param string[] $gtmDataKeys
+	 * @param array $jsVars
 	 * @return array
 	 */
-	public function getDataLayer( array $GtmData, array $JSVars ): array {
-		$dataLayer = [];
-		foreach ( $GtmData as $key ) {
-			 if ( isset( $JSVars[$key] ) ) {
-				 $dataLayer[$key] = $JSVars[$key];
-			 }
+	private function buildDataLayerPayload(array $gtmDataKeys, array $jsVars): array
+	{
+		$payload = [];
+		foreach ($gtmDataKeys as $key) {
+			if ($key !== '' && array_key_exists($key, $jsVars)) {
+				$payload[$key] = $jsVars[$key];
+			}
 		}
-		return $dataLayer;
+		return $payload;
 	}
 
 	/**
+	 * head に GTM を挿入
 	 * @param OutputPage $out
 	 * @param Skin $skin
 	 * @return void
 	 */
-	public function onBeforePageDisplay( $out, $skin ): void {
-		$containerId = $this->config->get( 'GtmId' );
-		$GtmData = $this->config->get( 'GtmData' );
-		$GtmAttribs = $this->config->get( 'GtmAttribs' );
-		$GtmBeforeTag = $this->config->get( 'GtmBeforeTag' );
-		$GtmAfterTag = $this->config->get( 'GtmAfterTag' );
+	public function onBeforePageDisplay($out, $skin): void
+	{
+		$containerId = (string)$this->config->get('GtmId');
+		// コンテナ未設定 エラー出さずに何もしない
+		if ($containerId === '') {
+			return;
+		}
 
-		// Google Tag Manager Container ID
-		if ( $containerId !== "" ) {
+		$gtmDataKeys         = (array)$this->config->get('GtmData');
+		$gtmAttribs          = (array)($this->config->get('GtmAttribs') ?? []);
+		$gtmBeforeTag        = (string)$this->config->get('GtmBeforeTag');
+		$gtmAfterTag         = (string)$this->config->get('GtmAfterTag');
+		$gatewayPath         = (string)$this->config->get('GtmTagGatewayPath');
+		$gateway     = (bool)$this->config->get('GtmTagGateway');
 
-			// DataLayer
-			$DataLayerTag = "";
-			if ( isset( $GtmData[0] ) ) {
+		// dataLayer ペイロード構築
+		$payload = [];
+		if (isset($gtmDataKeys[0])) {
+			$payload = $this->buildDataLayerPayload($gtmDataKeys, $out->getJSVars());
+		}
 
-				$DataLayer = $this->getDataLayer( $GtmData, $out->getJSVars() );
-				$DataLayerPush = '';
-
-				if ( $DataLayer ) {
-					$DataLayerPush = json_encode( $DataLayer );
-				}
-				$DataLayerTag = PHP_EOL . 'window.dataLayer = window.dataLayer || []; dataLayer = [' . $DataLayerPush . '];';
+		// スクリプト属性に CSP nonce を付与 
+		$csp = $out->getCSP();
+		if ($csp) {
+			$nonce = $csp->getNonce();
+			if ($nonce) {
+				$gtmAttribs['nonce'] = $nonce;
 			}
+		}
 
-			// BeforeTag
-			if ( $GtmBeforeTag !== "" ) {
-				$out->addHeadItem( "gtm-before", $GtmBeforeTag );
-			}
 
-			// Google Tag Manager Tag
-			$html = Html::element(
-				'script',
-				$GtmAttribs, <<<TXT
-{$DataLayerTag}
+		// ゲートウェイを使う場合だけ差し替え
+		$gtmScriptSrc = 'https://www.googletagmanager.com/gtm.js';
+		if ($gateway && $gatewayPath !== '') {
+			// Google タグ ゲートウェイ用に予約されている Web サイト上のパス。
+			///metrics、/securemetric、/analytics などの単語またはその他の単語を選択します。
+			$gtmScriptSrc = $gatewayPath;
+		}
+
+		// 事前タグ
+		if ($gtmBeforeTag !== '') {
+			$out->addHeadItem('gtm-before', $gtmBeforeTag);
+		}
+
+		// GTM 
+		$inlined = <<<JS
+window.dataLayer = window.dataLayer || [];
+%s
 (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='{$gtmScriptSrc}?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','{$containerId}');
-TXT );
-			$out->addHeadItem( "gtm-script", $html );
+JS;
 
-			// AfterTag
-			if ( $GtmAfterTag !== "" ) {
-				$out->addHeadItem( "gtm-after", $GtmAfterTag );
-			}
+		$pushLine = '';
+		if (!empty($payload)) {
+			$pushLine = 'window.dataLayer.push(' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ');';
+		}
 
+		$html = Html::element(
+			'script',
+			$gtmAttribs,
+			sprintf($inlined, $pushLine)
+		);
+		$out->addHeadItem('gtm-script', $html);
+
+		// 事後タグ
+		if ($gtmAfterTag !== '') {
+			$out->addHeadItem('gtm-after', $gtmAfterTag);
 		}
 	}
 
 	/**
+	 * body 末尾に noscript　を挿入
 	 * @param Skin $skin
-	 * @param &$text
+	 * @param string &$text
 	 * @return bool
 	 */
-	public function onSkinAfterBottomScripts( $skin, &$text ): bool {
-		$containerId = $this->config->get( 'GtmId' );
-		$GtmData = $this->config->get( 'GtmData' );
-		$GtmNoScript = $this->config->get( 'GtmNoScript' );
+	public function onSkinAfterBottomScripts($skin, &$text): bool
+	{
+		$containerId    = (string)$this->config->get('GtmId');
+		$noScript = (bool)$this->config->get('GtmNoScript');
+		$gatewayEnabled = (bool)$this->config->get('GtmTagGatewayEnabled');
 
-		if ( !$GtmNoScript ) {
+		// コンテナ未設定 or noscript 無効 追加しない
+		if ($containerId === '' || !$noScript) {
 			return true;
 		}
 
-		if ( $containerId === "" ) {
+		// ゲートウェイ有効時は 3rd-party 呼び出しを避けるため noscript  追加しない
+		if ($gatewayEnabled) {
 			return true;
 		}
 
-		// DataLayer
-		$DataLayerPush = '';
-		if ( isset( $GtmData[0] ) ) {
-			$DataLayer = $this->getDataLayer( $GtmData, $skin->getOutput()->getJSVars() );
-			if ( $DataLayer ) {
-				$DataLayerPush = '&' . http_build_query( $DataLayer );
-			}
-		}
-
-		$noscript = <<<TXT
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}{$DataLayerPush}"
+		// ns.html 追加
+		$noscript = <<<HTML
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={$containerId}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-TXT;
+HTML;
 		$text .= $noscript;
 
 		return true;
