@@ -55,7 +55,7 @@ $wgGtmData = [
 | **\$wgGtmNoScript**          | `<noscript>` タグを追加するかどうか                       | `$wgGtmNoScript = false;`                            |
 | **\$wgGtmAttribs**           | `<script>` タグの属性（連想配列で指定）                      | `$wgGtmAttribs = ["data-cookieconsent"=>"ignore"];`  |
 | **\$wgGtmTagGatewayPath**    | Google タグゲートウェイのパス（例 `/metrics`）               | `$wgGtmTagGatewayPath = "/metrics";`                 |
-| **\$wgGtmTagGatewayEnabled** | タグゲートウェイを有効化するかどうか（true で有効）                   | `$wgGtmTagGatewayEnabled = true;`                    |
+| **\$wgGtmTagGateway** | タグゲートウェイを有効化するかどうか（true で有効）                   | `$wgGtmTagGateway = true;`                    |
 
 
 
