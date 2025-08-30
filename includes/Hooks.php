@@ -92,7 +92,6 @@ class Hooks implements BeforePageDisplayHook, SkinAfterBottomScriptsHook
 		// GTM 
 		$inlined = <<<JS
 window.dataLayer = window.dataLayer || [];
-%s
 (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='{$gtmScriptSrc}?id='+i+dl;f.parentNode.insertBefore(j,f);
@@ -104,7 +103,7 @@ JS;
 			$pushLine = 'window.dataLayer.push(' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ');';
 		}
 
-		$html = Html::element(
+		$html = Html::rawElement(
 			'script',
 			$gtmAttribs,
 			sprintf($inlined, $pushLine)
@@ -127,7 +126,7 @@ JS;
 	{
 		$containerId    = (string)$this->config->get('GtmId');
 		$noScript = (bool)$this->config->get('GtmNoScript');
-		$gatewayEnabled = (bool)$this->config->get('GtmTagGatewayEnabled');
+		$gateway = (bool)$this->config->get('GtmTagGateway');
 
 		// コンテナ未設定 or noscript 無効 追加しない
 		if ($containerId === '' || !$noScript) {
@@ -135,7 +134,7 @@ JS;
 		}
 
 		// ゲートウェイ有効時は 3rd-party 呼び出しを避けるため noscript  追加しない
-		if ($gatewayEnabled) {
+		if ($gateway) {
 			return true;
 		}
 
